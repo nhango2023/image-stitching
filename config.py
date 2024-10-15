@@ -1,0 +1,16 @@
+WINDOW_WIDTH=1500
+WINDOW_HEIGHT=750
+HEADER_HEIGHT=WINDOW_HEIGHT*0.08
+FOOTER_HEIGHT=(WINDOW_HEIGHT-HEADER_HEIGHT)*0.06
+BODY_HEIGHT=WINDOW_HEIGHT-HEADER_HEIGHT- FOOTER_HEIGHT
+logo_image_path='./assets/images/logo.png'
+copy_right_image_path ='./assets/images/copy-right.png'
+sand_clock_gif_path = './assets/images/sand-clock.gif'
+tick_icon_green_path ='./assets/images/tick-icon-green.png'
+tick_icon_black_path = './assets/images/tick-icon-black.jpg'
+index_frame_finished_step_first_progress_bar=34
+index_frame_finished_step_second_progress_bar=58
+index_frame_finished_step_third_progress_bar=80
+index_frame_finished_step_fourth_progress_bar=102
+progress_bar_gif_path = './assets/images/progress-bar (1).gif'
+pulsating_circle_loading_gif_path = './assets/images/pulsating-circle-loading.gif'
