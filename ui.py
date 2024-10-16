@@ -79,8 +79,8 @@ class App():
 
 # Bind mouse wheel scrolling to the canvas
         self.body_top_contain.bind("<MouseWheel>", self._on_mouse_wheel_frame_display_multiple_images)
-        self.Explain = Canvas(self.frame_body_top, width=900, height=HEADER_HEIGHT*0.7, bg="white", relief='ridge', highlightthickness=0)
-        self.Explain.pack(fill=BOTH, expand=True)
+        self.Explain = Canvas(self.body_top_contain, width=900, height=HEADER_HEIGHT*0.7, bg="white", relief='ridge', highlightthickness=0)
+        self.Explain.place(relx=0.5, rely=0.5, anchor="c")
         self.Explain.create_text(10, 10, anchor = "nw",font=('Helvetica 15'), text='Choose more than one image or a folder containing images and press on start button to stitch images')
 
 
@@ -133,7 +133,7 @@ class App():
         self.delete_all_images['state']='disabled'
         self.delete_all_images.place(relx=0.5, rely=0.32, anchor='c')
 
-        self.start = Button(body_rigt_item, text='Start', font='8', width=19, command=self.animation_window_stitching_images)
+        self.start = Button(body_rigt_item, text='Start', font='8', width=19, command=self.animation_to_window_stitching_images)
         self.start['state'] = 'disabled'
         self.start.place(relx=0.5, rely=0.95, anchor='c')
 
@@ -142,16 +142,16 @@ class App():
         footer.grid(row=2, column=0, sticky=NSEW)        
         footer.create_line(0,0,WINDOW_WIDTH, 0)
         
-
-        footer_left = Canvas(footer, bg='white', width=WINDOW_WIDTH*0.6, bd=0,relief='ridge', highlightthickness=0)
-        footer_left.place(relx=0.1, rely=0.5, anchor='c')
+        
+        footer_left = Canvas(footer, bg='white', height=FOOTER_HEIGHT*0.5, width=WINDOW_WIDTH*0.6, bd=0,relief='ridge', highlightthickness=0)
+        footer_left.pack(side=LEFT, pady=7)
 
         tick_icon_image = ImageTk.PhotoImage(Image.open(tick_icon_black_path))
         self.status_image = Label(footer_left, bg='white', image = tick_icon_image, bd=0,relief='ridge', highlightthickness=0)
-        self.status_image.pack(side = LEFT,expand=True)
+        self.status_image.grid(column=0, row=0)
 
-        self.status_text = Label(footer_left,bg='white', text='Unready', font='13',  bd=0,relief='ridge', highlightthickness=0)
-        self.status_text.pack(side = RIGHT, expand=True)
+        self.status_text = Label(footer_left,bg='white', text='Unready', font='5',  bd=0,relief='ridge', highlightthickness=0)
+        self.status_text.grid(column=1, row=0)
 
         footer_right = Canvas(footer, bg='white', width=WINDOW_WIDTH*0.4, height=FOOTER_HEIGHT, bd=0,relief='ridge', highlightthickness=0)
         footer_right.place(relx=0.82, rely=0.5 ,anchor='c')
@@ -195,7 +195,7 @@ class App():
         step_four_infor = Label(step_infor_container, text='Blend', bg='white', font='1')
         step_four_infor.place(relx=0.735, rely=.5, anchor='c')
 
-        self.back_main_window= Button(stitching_status, text='Back',font='12', padx=10, pady=10)
+        self.back_main_window= Button(stitching_status, text='Back',font='12', padx=10, pady=10, command=self.animation_back_to_window)
         self.back_main_window.place(relx=0.5, rely=0.7, anchor='c')
         
 
@@ -258,7 +258,7 @@ class App():
             # Clear canvas content if using a canvas
             for widget in self.frame_body_top.winfo_children():
                 widget.destroy()
-
+            self.Explain.place_forget()
             image_size = 165
             spacing_x = 10  # Horizontal spacing between images
             spacing_y = 10  # Vertical spacing between rows
@@ -398,7 +398,7 @@ class App():
 
         self.text_output_path.config(text=self.ouput_image_stitching_path)
 
-    def animation_window_stitching_images(self):
+    def animation_to_window_stitching_images(self):
         end_position_window_stitching = 0.5
         start_position_window_stitching = 1.5
         start_position_main_window = 0.5
@@ -432,9 +432,7 @@ class App():
 
         start(start_position_main_window,end_position_main_window,step_count, steps_total, step, start_position_window_stitching, end_position_window_stitching)
 
-    def command_start_stitching(self):
-        process_window_stitching_animation = threading.Thread(target=self.animation_window_stitching_images)
-        process_window_stitching_animation.start()
+    
 
     def displayImage(self, image):
         if image is not None:
@@ -504,3 +502,45 @@ class App():
             self.window.after_cancel(self.progress_bar_animation_window)
 
         start()       
+
+    def animation_back_to_window(self):
+        end_position_window_stitching = 1.5
+        start_position_window_stitching = 0.5
+        start_position_main_window = -0.5
+        end_position_main_window = 0.5
+        steps_total = 120
+        step_count = 0
+        step = (start_position_window_stitching - end_position_window_stitching) / steps_total
+        def start(start_position_main_window,end_position_main_window,step_count, steps_total, step, start_position_window_stitching, end_position_window_stitching):
+            if step_count <= steps_total:
+                current_position_main_window = start_position_main_window - step * step_count
+                self.body_container.place(relx=current_position_main_window, rely=0.5, anchor='c')
+                current_position_window_stitching = start_position_window_stitching - step * step_count
+                self.window_stitching_images.place(relx=current_position_window_stitching, rely=0.51, anchor='c')
+                step_count += 1
+                
+                self.window_stitching_images_animation = self.window.after(2, lambda: start(start_position_main_window,end_position_main_window,step_count, steps_total, step, start_position_window_stitching, end_position_window_stitching))
+            else:
+                self.refresh_main_window()
+                stop()
+
+        def stop():
+
+            self.window.after_cancel(self.window_stitching_images_animation)
+
+
+        start(start_position_main_window,end_position_main_window,step_count, steps_total, step, start_position_window_stitching, end_position_window_stitching)
+
+
+    def refresh_main_window(self):
+        self.start.configure(background="#f0f0f0")
+        self.start['state'] = 'disabled'
+        self.can_start = False
+        self.delete_all_images['state']='disabled'
+        for widget in self.frame_body_top.winfo_children():
+                widget.destroy()
+        self.Explain.place(relx=0.5, rely=0.5, anchor="c")
+        self.tick_black_image=ImageTk.PhotoImage(Image.open(tick_icon_black_path))
+        self.status_text.config(text='Unready', fg='black')                
+        self.status_image.config( image=self.tick_black_image)
+
