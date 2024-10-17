@@ -236,6 +236,7 @@ class App():
         for widget in self.frame_body_top.winfo_children():
             widget.destroy()
         self.Explain.place(relx=.5, rely=.5, anchor='c')
+        self.delete_all_images["state"] = "disabled"
 
     def get_frame_from_gif(self, path_to_img):
         with Image.open(path_to_img) as gif:
@@ -254,10 +255,6 @@ class App():
     def command_choose_images(self):
         def display_multiple_choosen_images(self, list_image_paths):
             self.can_start = False
-
-            # Clear canvas content if using a canvas
-            for widget in self.frame_body_top.winfo_children():
-                widget.destroy()
             self.Explain.place_forget()
             image_size = 165
             spacing_x = 10  # Horizontal spacing between images
@@ -295,21 +292,31 @@ class App():
             self.body_top_contain.config(scrollregion=self.body_top_contain.bbox("all"))
 
             self.is_loading_imges = False
-            if len(list_image_paths) > 1:
-                self.can_start = True
-                self.list_image_paths = list_image_paths
-
-
+            
         self.taskname = "choose images"
         self.is_choosing_images=True
         process_sand_clock_animation = threading.Thread(target=self.sand_clock_animation)
         process_sand_clock_animation.start()      
-        images_path = fd.askopenfilenames(parent=self.window, title='Choose a file')     
-        self.is_loading_imges=True
+        images_path = fd.askopenfilenames(parent=self.window, title='Choose a file')         
         self.is_choosing_images=False
-        process_display_multiple_choosen_images = threading.Thread(target=lambda: display_multiple_choosen_images(self, list(images_path)))
-        process_display_multiple_choosen_images.start()
-          
+        list_image_paths = list(images_path)
+        if len(list_image_paths)>1:
+            self.number_chosen_images.config(text=str(len(list_image_paths))+" images is chosen", fg='green')
+        else: self.number_chosen_images.config(text=str(len(list_image_paths))+" images is chosen", fg='red')
+        for widget in self.frame_body_top.winfo_children():          
+                widget.destroy()
+        if (len(list_image_paths)>0):
+            self.delete_all_images['state']='normal'
+            self.is_loading_imges=True
+            process_display_multiple_choosen_images = threading.Thread(target=lambda: display_multiple_choosen_images(self, list_image_paths))
+            process_display_multiple_choosen_images.start()
+            if len(list_image_paths) > 1:
+                self.can_start = True
+                self.list_image_paths = list_image_paths
+        else:
+            self.delete_all_images['state']='disabled'
+            self.start['state'] = 'disabled'
+            self.can_start = False
     def sand_clock_animation(self):
         index=0
         dot=0
@@ -328,32 +335,35 @@ class App():
                     self.status_text.config(text='Not enough two images', fg='red')                
                     self.status_image.config( image=self.tick_black_image)
                     self.Explain.place(relx=.5, rely=.5, anchor='c')
+                    self.start['state'] = 'disabled'
+                    self.start.config(bg='#f0f0f0')
             else:
                 self.status_image.config(image=self.sand_clock_frames[index])
+                self.status_text.config(fg='black') 
                 if(index%9==0):
                     if (dot==0):
                         if self.is_choosing_images ==True:
-                            self.status_text.config(text='Images is been choosing')
+                            self.status_text.config(text='Choosing images')
                         else:
-                            self.status_text.config(text='Images is been loading')
+                            self.status_text.config(text='Loading images')
                         dot+=1
                     elif (dot==1):
                         if self.is_choosing_images ==True:
-                            self.status_text.config(text='Images is been choosing.')
+                            self.status_text.config(text='Choosing images.')
                         else:
-                            self.status_text.config(text='Images is been loading.')                        
+                            self.status_text.config(text='Loading images.')                        
                         dot+=1
                     elif(dot==2):
                         if self.is_choosing_images ==True:
-                            self.status_text.config(text='Images is been choosing..')
+                            self.status_text.config(text='Choosing images..')
                         else:
-                            self.status_text.config(text='Images is been loading..')
+                            self.status_text.config(text='Loading images..')
                         dot+=1
                     else:
                         if self.is_choosing_images ==True:
-                            self.status_text.config(text='Images is been choosing...')
+                            self.status_text.config(text='Choosing images...')
                         else:
-                            self.status_text.config(text='Images is been loading...')
+                            self.status_text.config(text='Loading images...')
                         dot=0
                 index += 1
                 if index > len(self.sand_clock_frames)-1:
@@ -395,8 +405,10 @@ class App():
 
     def command_choose_output_path(self):
         self.ouput_image_stitching_path=filedialog.askdirectory()
-
-        self.text_output_path.config(text=self.ouput_image_stitching_path)
+        if (self.ouput_image_stitching_path==""):
+            self.ouput_image_stitching_path="D:/"
+        else:
+            self.text_output_path.config(text=self.ouput_image_stitching_path)
 
     def animation_to_window_stitching_images(self):
         end_position_window_stitching = 0.5
@@ -456,6 +468,8 @@ class App():
         self.stitching_log_top.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def progress_bar_animation(self):
+        self.view_image.place_forget()
+        self.stitching_step = None
         def start():
             if self.stitching_step == "finish":
                 stop()
@@ -525,9 +539,9 @@ class App():
                 stop()
 
         def stop():
-
             self.window.after_cancel(self.window_stitching_images_animation)
-
+            for widget in self.stitching_log_top_frame.winfo_children():
+                widget.destroy()
 
         start(start_position_main_window,end_position_main_window,step_count, steps_total, step, start_position_window_stitching, end_position_window_stitching)
 
@@ -543,4 +557,5 @@ class App():
         self.tick_black_image=ImageTk.PhotoImage(Image.open(tick_icon_black_path))
         self.status_text.config(text='Unready', fg='black')                
         self.status_image.config( image=self.tick_black_image)
+        self.number_chosen_images.config(text="0 images is chosen", fg="red")
 

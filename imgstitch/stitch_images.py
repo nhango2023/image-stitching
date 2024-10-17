@@ -16,15 +16,15 @@ def stitch_images(self, list_path_image, stitch_direction):
 
 def stitch_images_and_save(self, list_path_image, stitch_direction=1, output_folder=None):
     Label(self.stitching_log_top_frame, text="Start stitching images..",  font=("Arial", 25))
-    start = timeit.default_timer()
+    self.start_calculate_time = timeit.default_timer()
     timestr = time.strftime("%Y%m%d_%H%M%S")
     filename = "stitched_image_" + timestr + ".jpg"
     stitched_img = stitch_images(self, list_path_image, stitch_direction)
     full_save_path = os.path.join(output_folder, filename)
     cv2.imwrite(full_save_path, stitched_img)
-    stop = timeit.default_timer()
+    self.stop_calculate_time = timeit.default_timer()
     self.stitching_step = "finish"
-    self.calculate_time=str(stop-start)
+    self.calculate_time=str(self.stop_calculate_time-self.start_calculate_time)
     self.view_image.bind("<Button-1>", lambda event: self.displayImage(stitched_img))
     self.view_image.place(relx=0.1, rely=0.5, anchor='c')
 

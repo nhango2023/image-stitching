@@ -55,7 +55,7 @@ def get_matches(self, img_a_gray, img_b_gray, num_keypoints=1000, threshold=0.8)
         good_kp_b.append(kp_b[match.trainIdx].pt) # matching keypoint in image B
     
     if len(good_kp_a) < MINIMUM_MATCH_POINTS:
-        raise exceptions.NotEnoughMatchPointsError(len(good_kp_a), MINIMUM_MATCH_POINTS, self.stitching_log_top_frame)
+        raise exceptions.NotEnoughMatchPointsError(len(good_kp_a), MINIMUM_MATCH_POINTS, self)
     
     return np.array(good_kp_a), np.array(good_kp_b)
 
@@ -188,7 +188,7 @@ def compute_homography_ransac(matches_a, matches_b, self):
             best_i = i
     best_confidence_obtained = int(100 - (100 * lowest_outliers_count / num_all_matches))
     if best_confidence_obtained < CONFIDENCE_THRESH:
-        raise(exceptions.MatchesNotConfident(best_confidence_obtained, self.stitching_log_top_frame))
+        raise(exceptions.MatchesNotConfident(best_confidence_obtained, self))
     return best_h_mat
 
 
